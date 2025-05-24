@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import Image from 'next/image';
 
 // 定义数据类型
 interface Item {
@@ -123,11 +124,15 @@ export default function Answer() {
               key={item.id}
               className="bg-white rounded-lg shadow-md overflow-hidden"
             >
-              <img
-                src={item.imageUrl}
-                alt={item.title}
-                className="w-full h-48 object-cover"
-              />
+              <div className="relative w-full h-48">
+                <Image
+                  src={item.imageUrl}
+                  alt={item.title}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                />
+              </div>
               <div className="p-4">
                 <h2 className="text-lg font-semibold mb-2">{item.title}</h2>
                 <p className="text-gray-600">{item.content}</p>
