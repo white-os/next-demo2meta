@@ -27,6 +27,7 @@ export default function Home() {
         <div className="flex flex-col justify-center items-center mt-5 gap-2">
           <Link className="text-blue-500" href={`/meta/answer`}>页面1</Link>
           <Link className="text-blue-500" href={`/meta/answer`}>页面2</Link>
+          <Link className="text-blue-500" href={`/weather`}>天气查询</Link>
         </div>
       </div>
     </div>

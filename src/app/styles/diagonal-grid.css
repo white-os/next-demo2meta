@@ -1,0 +1,63 @@
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  width: 300px;
+  height: 300px;
+  border: 2px solid #000;
+  position: relative;
+}
+
+.grid-cell {
+  border: 1px solid #ccc;
+  position: relative;
+}
+
+.diagonal-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.diagonal-line::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 424px; /* √2 * 300px */
+  height: 1px;
+  background-color: #666;
+  transform: rotate(45deg);
+  transform-origin: top left;
+}
+
+.circle {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid red;
+  border-radius: 50%;
+  background-color: transparent;
+}
+
+/* 第一个圆圈位置 */
+.circle:nth-child(1) {
+  top: 15%;
+  left: 15%;
+}
+
+/* 第二个圆圈位置 */
+.circle:nth-child(2) {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* 第三个圆圈位置 */
+.circle:nth-child(3) {
+  bottom: 15%;
+  right: 15%;
+} 

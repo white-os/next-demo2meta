@@ -21,8 +21,6 @@ interface ICardPos {
   y: number;
 }
 
-// 假设宽度200 gap 20 共有两列
-
 export default function Waterfall({ list }: IProps) {
     const cardWidth = 200;
     const gap = 60;
@@ -30,9 +28,10 @@ export default function Waterfall({ list }: IProps) {
     const pageNumber = 10;
     const containerRef = useRef<HTMLDivElement>(null);
     const listRef = useRef<HTMLDivElement>(null);
-    const [endIndex, setEndIndex] = useState(pageNumber);
-    const hasMore = endIndex < list.length;
     const [isLoading, setIsLoading] = useState(false);
+    const [endIndex, setEndIndex] = useState(pageNumber);
+
+    const hasMore = endIndex < list.length;
 
     const cardPos = useMemo(() => {
       const newCardPos: Record<string, ICardPos> = {};
@@ -61,34 +60,36 @@ export default function Waterfall({ list }: IProps) {
       return newCardPos;
     }, [list, endIndex]);
 
-
     const curList = useMemo(() => {
       return list.slice(0, endIndex);
     }, [list, endIndex]);
 
     useEffect(() => {
       const container = containerRef.current;
-      if (!container) {
-        return;
-      }
-      const scrollHandler = () => {
+      if (!container) return;
+
+      const handleScroll = () => {
         if (isLoading || !hasMore) return;
+
         const scrollTop = container.scrollTop;
         const scrollHeight = container.scrollHeight;
         const clientHeight = container.clientHeight;
-        if (scrollHeight - scrollTop - clientHeight < 100) {
+        
+        // 当距离底部100px时就开始加载
+        if (scrollHeight - (scrollTop + clientHeight) < 100) {
           setIsLoading(true);
+          // 模拟异步加载
           setTimeout(() => {
-            setEndIndex((i) => i + pageNumber);
+            setEndIndex(prev => prev + pageNumber);
             setIsLoading(false);
           }, 500);
         }
       };
-      
-      container?.addEventListener('scroll', scrollHandler);
+
+      container.addEventListener('scroll', handleScroll);
       return () => {
-        container?.removeEventListener('scroll', scrollHandler);
-      }
+        container.removeEventListener('scroll', handleScroll);
+      };
     }, [isLoading, hasMore]);
 
     return (
