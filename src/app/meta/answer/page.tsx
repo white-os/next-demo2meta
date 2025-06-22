@@ -25,7 +25,6 @@ const generateMockData = (start: number, count: number): Item[] => {
 export default function Answer() {
   const [items, setItems] = useState<Item[]>([]);
   const [hasMore, setHasMore] = useState(true);
-  const [page, setPage] = useState(1);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const itemsPerPage = 10;
 
@@ -40,7 +39,6 @@ export default function Answer() {
     try {
       // 模拟网络请求延迟
       await new Promise(resolve => setTimeout(resolve, 1000));
-      setPage(1);
       setItems(generateMockData(0, itemsPerPage));
       setHasMore(true);
     } finally {
@@ -58,7 +56,6 @@ export default function Answer() {
     setTimeout(() => {
       const newItems = generateMockData(items.length, itemsPerPage);
       setItems(prevItems => [...prevItems, ...newItems]);
-      setPage(prevPage => prevPage + 1);
     }, 1000); // 模拟网络延迟
   }, [items.length]);
 
