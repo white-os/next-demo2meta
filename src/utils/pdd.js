@@ -4,18 +4,18 @@
 // 思路1：dom.getElementByTagName
 // 思路2：有limit的dfs
 export const addClassToDepth = (dom, level = 4) => {
-    const dfs = (dom, depth) => {
-        if (depth === level) {
-            if (dom.nodeName === 'IMG') {
-                dom.classList.add(targetClass);
-            }
-            return
-        }
-        for (const child of dom.children) {
-            dfs(child, depth + 1);
-        }
+  const dfs = (dom, depth) => {
+    if (depth === level) {
+      if (dom.nodeName === 'IMG') {
+        dom.classList.add(targetClass);
+      }
+      return
     }
-    dfs(dom, 0)
+    for (const child of dom.children) {
+      dfs(child, depth + 1);
+    }
+  }
+  dfs(dom, 0)
 }
 
 
@@ -23,9 +23,9 @@ export const addClassToDepth = (dom, level = 4) => {
 // 思路通过promise.race实现
 const timeout = (time) => {
   return new Promise((resolve, reject) => {
-      setTimeout(() => {
-          reject(new Error('promise time out'));
-      }, time)
+    setTimeout(() => {
+      reject(new Error('promise time out'));
+    }, time)
   })
 }
 
@@ -35,7 +35,7 @@ const promiseTimeout = (promise, time) => {
 
 const p1 = new Promise((resolve) => {
   setTimeout(() => {
-      resolve('resolve');
+    resolve('resolve');
   }, 5000)
 })
 
@@ -47,15 +47,15 @@ promiseTimeout(p1, 1000).then(result => console.log(result)).catch(err => consol
 const queuePromise = async (promises) => {
   const res = [];
   for (const promise of promises) {
-      res.push(await promise);
+    res.push(await promise);
   }
   return res;
 }
 
 const promises = [
-() => new Promise(resolve => setTimeout(() => resolve(1), 100)),
-() => new Promise(resolve => setTimeout(() => resolve(2), 50)),
-() => new Promise(resolve => setTimeout(() => resolve(3), 200))
+  () => new Promise(resolve => setTimeout(() => resolve(1), 100)),
+  () => new Promise(resolve => setTimeout(() => resolve(2), 50)),
+  () => new Promise(resolve => setTimeout(() => resolve(3), 200))
 ];
 
 queuePromise(promises.map(fn => fn())).then(res => console.log(res));
@@ -152,6 +152,31 @@ export const controlFn = (fn, maxCount, maxTime) => {
   execute();
 }
 
+// promis实现对tasks的顺序执行，并配置最大重复次数
+export const excuteTasks = (tasks, maxRetries) => {
+  return new Promise(async (resolve, reject) => {
+    for (let i = 0; i < tasks.length; i++) {
+      let attempt = 0;
+
+      while(attempt < maxRetries) {
+        try {
+          await tasks[i]();
+          break;
+        } catch (err) {
+          attempt++;
+          if (attempt >= maxRetries) {
+            reject(err);
+          }
+        }
+      }
+    }
+    resolve();
+  });
+}
+
+
+
+
 // deepclone
 export const deepClone = (target) => {
   if (typeof target !== 'object' || target === null) {
@@ -166,4 +191,90 @@ export const deepClone = (target) => {
     }
   }
   return clone;
+}
+
+
+// 非递归实现二叉树后序遍历
+export const postOrderTraversal = (root) => {
+  const stack1 = [root];
+  const stack2 = [];
+
+  while (stack1.length > 0) {
+    const node = stack1.pop()
+    stack2.push(node);
+
+    if (node.left) stack1.push(node.left);
+    if (node.right) stack1.push(node.right);
+  }
+
+  return stack2.reverse().map(node => node.val);
+}
+
+// 实现一个myFlat函数，将多维数组扁平化
+const myFlat = (arr) => {
+  const res = [];
+
+  for (const item of arr) {
+    if (Array.isArray(item)) {
+      res.push(...myFlat(item));
+    } else {
+      res.push(item);
+    }
+  }
+
+  return res;
+}
+
+
+// react实现计时组件
+export function Timer() {
+  const [seconds, setSeconds] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSeconds(seconds => seconds + 1)
+    }, 1000)
+    return () => clearInterval(timer);
+  }, [])
+
+  return <div>{seconds}</div>
+}
+
+// 使用requestAnimationFrame
+export function requestAnimationFrameTimer() {
+  const [second, setSecond] = useState(0);
+  const timeRef = useRef(0);
+
+  useEffect(() => {
+    timeRef.current = Date.now();
+    let frame;
+    const tick = () => {
+      setSecond(Math.floor((Date.now() - timeRef.current) / 1000));
+      frame = window.requestAnimationFrame(tick);
+    }
+    tick();
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  return <div>{second}</div>;
+}
+
+// 倒计时函数
+function Timer ({ endTime, callback }) {
+  const [seconds, setSeconds] = useState(endTime); // 展示的时间
+
+  useEffect(() => {
+      if (seconds === 0) {
+          callback && callback();
+          return;
+      }
+
+      const timer = setInterval(() => {
+          setSeconds(seconds => seconds - 1);
+      }, 1000);
+
+      return clearInterval(timer);
+  }, [seconds, callback, setSeconds]);
+
+  return <div>倒计时：{seconds} s</div>;
 }
