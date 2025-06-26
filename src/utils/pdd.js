@@ -151,3 +151,19 @@ export const controlFn = (fn, maxCount, maxTime) => {
   }
   execute();
 }
+
+// deepclone
+export const deepClone = (target) => {
+  if (typeof target !== 'object' || target === null) {
+    return target;
+  }
+
+  const clone = Array.isArray(target) ? [] : {};
+
+  for (const key in target) {
+    if (target.hasOwnProperty(key)) {
+      clone[key] = deepClone(target[key]);
+    }
+  }
+  return clone;
+}
