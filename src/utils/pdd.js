@@ -1,25 +1,8 @@
 // pdd前练习题目集合
 
-// 问题1：怎么找到一个标签下面和当前标签相差四级的标签，并给他添加指定的class样式
-// 思路1：dom.getElementByTagName
-// 思路2：有limit的dfs
-export const addClassToDepth = (dom, level = 4) => {
-  const dfs = (dom, depth) => {
-    if (depth === level) {
-      if (dom.nodeName === 'IMG') {
-        dom.classList.add(targetClass);
-      }
-      return
-    }
-    for (const child of dom.children) {
-      dfs(child, depth + 1);
-    }
-  }
-  dfs(dom, 0)
-}
-
-
-// 问题2：实现一个promisetimeout，接收两个参数，第一个为promise，第二个为number，如果promise在number给定的时间内resolve或reject则直接返回，否则返回一个rejected的promise，其reason为new Error('promise time out')
+// promise问题1：实现一个限定时间的promise
+// 单个异步任务，超时控制
+// 实现一个promisetimeout，接收两个参数，第一个为promise，第二个为number，如果promise在number给定的时间内resolve或reject则直接返回，否则返回一个rejected的promise，其reason为new Error('promise time out')
 // 思路通过promise.race实现
 const timeout = (time) => {
   return new Promise((resolve, reject) => {
@@ -42,12 +25,19 @@ const p1 = new Promise((resolve) => {
 promiseTimeout(p1, 1000).then(result => console.log(result)).catch(err => console.error(err));
 
 
-// 问题3：给一个promise数组，如何实现按顺序执行
+
+// promise问题2：给一个promise数组，如何实现按顺序执行
+// 多个异步任务，按顺序执行
 // 思路： 需要使用await实现
 const queuePromise = async (promises) => {
   const res = [];
   for (const promise of promises) {
-    res.push(await promise);
+    try {
+      const result = await promise;
+      res.push({ status: 'fulfilled', value: result});
+    } catch (err) {
+      res.push({ status: 'rejected', reason: err});
+    }
   }
   return res;
 }
@@ -61,27 +51,9 @@ const promises = [
 queuePromise(promises.map(fn => fn())).then(res => console.log(res));
 
 
-// 问题4 写一个自定义hook
-// 监听元素可见性
-export const useOpacity = (element) => {
-  const [opacity, setOpacity] = useState(0);
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(en => {
-      if (en[0].intersectionRatio > 0) setOpacity(1);
-      else setOpacity(0);
-    })
-
-    observer.observe(element);
-
-    return () => observer.disconnect();
-
-  }, [element]);
-
-  return [opacity]
-}
-
-// 问题5 实现promise.all reject也正常返回，输出所有promise的值
+// promise问题3: 实现promise.all
+// 实现promise.all reject也正常返回，输出所有promise的值
 const promiseAll = (promises) => {
   return new Promise(resolve => {
     const result = [];
@@ -121,13 +93,13 @@ const promises1 = [
 promiseAll(promises1).then(res => console.log(res)).catch(err => console.error(err));
 
 
-// 问题6 异步失败超时控制
+// promise问题4: 异步失败超时控制与重试
+// 单个异步任务，超时控制，失败重试
 // 实现一个controlFn:传入三个参数，第一个参数为一个异步函数，第二个参数为最大请求次数，第三个参数为最大请求时间
 // 需要实现功能:
 // 调用controlFn的时候直接调用第一个参数的异步函数，如果失败了，则再次调用
 // 但是最多只会调用最大请求次数的次数
 // 并且如果开始执行函数的时间超过最大请求时间也会停止
-
 export const controlFn = (fn, maxCount, maxTime) => {
   const count = 0;
   const promiseTimeout = new Promise((_, reject) => {
@@ -152,7 +124,10 @@ export const controlFn = (fn, maxCount, maxTime) => {
   execute();
 }
 
-// promis实现对tasks的顺序执行，并配置最大重复次数
+
+
+// promise问题5: 实现对tasks的顺序执行，并配置最大重复次数
+// 多个异步任务，顺序执行，失败重试
 export const excuteTasks = (tasks, maxRetries) => {
   return new Promise(async (resolve, reject) => {
     for (let i = 0; i < tasks.length; i++) {
@@ -173,6 +148,76 @@ export const excuteTasks = (tasks, maxRetries) => {
     resolve();
   });
 }
+// 非async和await的写法
+const excuteTasks = (tasks, maxRetries) => {
+  return new Promise((resolve, reject) => {
+      const runTask = (i) => {
+          if (i >= tasks.length) {
+              return resolve();
+          }
+          const attempt = (retry) => {
+              tasks[i]()
+                  .then(() => {
+                      runTask(i + 1);
+                  }).catch(() => {
+                      if (retry < maxRetries) {
+                          attempt(retry + 1);
+                      } else {
+                          reject(new Error('maxRetries'));
+                      }
+                  })
+          }
+          attempt(0);
+      }
+      runTask(0);
+  })
+}
+
+
+
+
+
+// 问题1：DSF怎么找到一个标签下面和当前标签相差四级的标签，并给他添加指定的class样式
+// 思路1：dom.getElementByTagName
+// 思路2：有limit的dfs
+export const addClassToDepth = (dom, level = 4) => {
+  const dfs = (dom, depth) => {
+    if (depth === level) {
+      if (dom.nodeName === 'IMG') {
+        dom.classList.add(targetClass);
+      }
+      return
+    }
+    for (const child of dom.children) {
+      dfs(child, depth + 1);
+    }
+  }
+  dfs(dom, 0)
+}
+
+
+// 问题4 写一个自定义hook
+// 监听元素可见性
+export const useOpacity = (element) => {
+  const [opacity, setOpacity] = useState(0);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(en => {
+      if (en[0].intersectionRatio > 0) setOpacity(1);
+      else setOpacity(0);
+    })
+
+    observer.observe(element);
+
+    return () => observer.disconnect();
+
+  }, [element]);
+
+  return [opacity]
+}
+
+
+
 
 
 
